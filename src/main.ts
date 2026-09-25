@@ -16,21 +16,64 @@ if (!Number.isInteger(prNumber) || prNumber <= 0) {
   process.exit(1);
 }
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('Missing ANTHROPIC_API_KEY.');
+const hasAnthropicAPI = Boolean(process.env.ANTHROPIC_API_KEY);
+
+const hasAWSCredentials = Boolean(
+  process.env.AWS_ACCESS_KEY_ID &&
+  process.env.AWS_SECRET_ACCESS_KEY
+);
+
+if (!hasAnthropicAPI && !hasAWSCredentials) {
+  console.error('Authentication required. Set one of:');
+  console.error('  - ANTHROPIC_API_KEY, or');
+  console.error(
+    '  - AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY + AWS_REGION'
+  );
   process.exit(1);
 }
 
+if (hasAWSCredentials && !process.env.AWS_REGION) {
+  console.error(
+    'AWS_REGION is required when using AWS authentication.'
+  );
+  process.exit(1);
+}
+
+console.log(
+  `Using ${hasAnthropicAPI ? 'Anthropic API' : 'AWS Bedrock'} authentication.`
+);
+
+const model = process.env.ANTHROPIC_MODEL;
+
+if (!model) {
+  console.error('Missing ANTHROPIC_MODEL.');
+  console.error('For Anthropic API, set ANTHROPIC_MODEL to an available Claude model.');
+  console.error('For AWS Bedrock, set ANTHROPIC_MODEL to the available Bedrock model ID.');
+  process.exit(1);
+}
+
+console.log(`Using model: ${model}`);
+
 try {
   const orchestrator = new Orchestrator();
-  const report = await orchestrator.reviewPullRequest(owner, repo, prNumber);
+
+  const report = await orchestrator.reviewPullRequest(
+    owner,
+    repo,
+    prNumber
+  );
 
   const generator = new ReportGenerator('reports');
-  const reportPath = await generator.generate(report);
+  const reportPaths = await generator.generateAll(report);
 
-  console.log(`Review completed successfully.`);
-  console.log(`Report: ${reportPath}`);
+  console.log('Review completed successfully.');
+
+  for (const reportPath of reportPaths) {
+    console.log(`Report: ${reportPath}`);
+  }
 } catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
+  console.error(
+    `Review failed: ${error instanceof Error ? error.message : String(error)}`
+  );
   process.exit(1);
 }
