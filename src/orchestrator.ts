@@ -32,8 +32,6 @@ Pull request number: ${pullRequest}`;
         prompt,
         options: {
           model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
-          permissionMode: 'bypassPermissions',
-          allowDangerouslySkipPermissions: true,
           maxTurns: 30,
           allowedTools: ['Task', 'Read', 'Glob', 'Grep', 'Skill'],
           agents: {

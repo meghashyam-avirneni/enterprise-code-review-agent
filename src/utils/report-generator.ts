@@ -13,12 +13,10 @@ export class ReportGenerator {
   async generateAll(report: ReviewReport): Promise<string[]> {
     await mkdir(this.outputDir, { recursive: true });
 
-    const safeRepo = report.repository.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const baseName = `${safeRepo}_${report.pullRequest}`;
 
-    const jsonPath = join(this.outputDir, `${baseName}.json`);
-    const markdownPath = join(this.outputDir, `${baseName}.md`);
-    const htmlPath = join(this.outputDir, `${baseName}.html`);
+    const jsonPath = join(this.outputDir, 'report.json');
+    const markdownPath = join(this.outputDir, 'report.md');
+    const htmlPath = join(this.outputDir, 'report.html');
 
     await writeFile(
       jsonPath,

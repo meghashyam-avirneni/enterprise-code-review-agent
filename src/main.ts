@@ -9,10 +9,23 @@ if (!owner || !repo || !prNumberStr) {
   process.exit(1);
 }
 
-const prNumber = Number.parseInt(prNumberStr, 10);
+if (!/^\d+$/.test(prNumberStr)) {
+  console.error('PR number must be a valid positive integer.');
+  console.error('Example: npm run dev -- octocat Hello-World 1');
+  process.exit(1);
+}
 
-if (!Number.isInteger(prNumber) || prNumber <= 0) {
-  console.error('PR number must be a positive integer.');
+const prNumber = Number(prNumberStr);
+
+if (!Number.isSafeInteger(prNumber) || prNumber <= 0) {
+  console.error('PR number must be a safe positive integer.');
+  console.error('Example: npm run dev -- octocat Hello-World 1');
+  process.exit(1);
+}
+
+if (!process.env.GITHUB_TOKEN) {
+  console.error('Missing GITHUB_TOKEN. Set it to a GitHub personal access token with permission to read pull requests.');
+  console.error('Example: GITHUB_TOKEN=ghp_xxx npm run dev -- octocat Hello-World 1');
   process.exit(1);
 }
 
