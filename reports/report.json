@@ -1,0 +1,133 @@
+{
+  "reportTitle": "Enterprise Code Review Report",
+  "repository": "Enterprise Code Review Agent",
+  "status": "reviewer-ready",
+  "summary": {
+    "principle": "Evaluate generated output rather than automatically trusting it.",
+    "confidence_is_not_correctness": true,
+    "schema_validity_is_not_semantic_correctness": true,
+    "deterministic_validation_is_independent": true,
+    "provenance_is_preserved": true,
+    "timeouts_are_explicit": true,
+    "dated_claims_are_required": true,
+    "human_review_is_supported": true
+  },
+  "policyPipeline": {
+    "evaluationCell": "umbrella × exclusions",
+    "confidence": 0.93,
+    "observedAccuracy": 0.0,
+    "brierScore": 0.865,
+    "overallBrierScore": 0.291,
+    "interpretation": "High confidence did not correspond to correctness in the evaluated cell.",
+    "humanReviewRequiredForAmbiguousCases": true,
+    "artifacts": [
+      "01-policy-pipeline/calibration-report.txt",
+      "01-policy-pipeline/pipeline-run.txt",
+      "01-policy-pipeline/routing_decisions.json"
+    ]
+  },
+  "schemaToolValidation": {
+    "schemaValiditySeparatedFromSemanticCorrectness": true,
+    "deterministicValidationUsed": true,
+    "modelArithmeticNotAutomaticallyTrusted": true,
+    "missingValuesRemainExplicit": true,
+    "normalizationPerformedBeforeComparison": true,
+    "originalSourceRepresentationRetained": true,
+    "discrepanciesPreserved": true,
+    "artifacts": [
+      "02-schema-tool-validation/discrepancy-run.txt",
+      "02-schema-tool-validation/extract-run.txt"
+    ]
+  },
+  "supplyChain": {
+    "provenancePreserved": true,
+    "conflictingMetricsRemainVisible": true,
+    "sourceDateContextRequired": true,
+    "timeSensitiveClaimsAreDated": true,
+    "timeoutIsExplicitUnavailableState": true,
+    "timeoutIsNotNegativeEvidence": true,
+    "artifacts": [
+      "03-supply-chain/investigation-run.txt",
+      "03-supply-chain/timeout-run.txt",
+      "03-supply-chain/briefing.txt"
+    ]
+  },
+  "reviewerRequirements": [
+    {
+      "requirement": "Routing evidence",
+      "status": "PASS",
+      "evidence": "01-policy-pipeline/routing_decisions.json"
+    },
+    {
+      "requirement": "Calibration evidence",
+      "status": "PASS",
+      "evidence": "01-policy-pipeline/calibration-report.txt"
+    },
+    {
+      "requirement": "Confidence versus correctness",
+      "status": "PASS",
+      "evidence": "01-policy-pipeline/calibration-report.txt"
+    },
+    {
+      "requirement": "Cell-level Brier score",
+      "status": "PASS",
+      "evidence": "01-policy-pipeline/calibration-report.txt"
+    },
+    {
+      "requirement": "Overall Brier score",
+      "status": "PASS",
+      "evidence": "01-policy-pipeline/calibration-report.txt"
+    },
+    {
+      "requirement": "Schema versus semantic validity",
+      "status": "PASS",
+      "evidence": "02-schema-tool-validation/discrepancy-run.txt"
+    },
+    {
+      "requirement": "Deterministic validation",
+      "status": "PASS",
+      "evidence": "02-schema-tool-validation/discrepancy-run.txt"
+    },
+    {
+      "requirement": "Null and missing field handling",
+      "status": "PASS",
+      "evidence": "02-schema-tool-validation/extract-run.txt"
+    },
+    {
+      "requirement": "Normalization",
+      "status": "PASS",
+      "evidence": "02-schema-tool-validation/extract-run.txt"
+    },
+    {
+      "requirement": "Provenance-preserving conflicts",
+      "status": "PASS",
+      "evidence": "03-supply-chain/investigation-run.txt"
+    },
+    {
+      "requirement": "Timeout handling",
+      "status": "PASS",
+      "evidence": "03-supply-chain/timeout-run.txt"
+    },
+    {
+      "requirement": "Dated claims",
+      "status": "PASS",
+      "evidence": "03-supply-chain/briefing.txt"
+    },
+    {
+      "requirement": "Cross-system reflection",
+      "status": "PASS",
+      "evidence": "reflection-brief.md"
+    }
+  ],
+  "finalPrinciples": [
+    "Confidence is a prioritization signal, not a correctness certificate.",
+    "Schema-valid output is not automatically semantically correct.",
+    "Deterministic checks should independently validate checkable results.",
+    "Missing evidence must remain missing rather than becoming fabricated data.",
+    "Normalization must preserve the original source representation.",
+    "Conflicting metrics should remain visible with provenance.",
+    "Timeouts represent unavailable evidence, not negative evidence.",
+    "Time-sensitive claims require date context.",
+    "Ambiguous cases should remain eligible for human review."
+  ]
+}

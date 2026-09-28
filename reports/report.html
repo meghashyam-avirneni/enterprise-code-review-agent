@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Code Review Report</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 24px;
+      color: #222;
+      background: #fff;
+    }
+
+    h1 {
+      border-bottom: 3px solid #222;
+      padding-bottom: 12px;
+    }
+
+    h2 {
+      margin-top: 36px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      margin-top: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    .pass {
+      font-weight: bold;
+    }
+
+    .metric {
+      font-size: 1.15em;
+      font-weight: bold;
+    }
+
+    .note {
+      border-left: 4px solid #555;
+      padding: 12px 16px;
+      background: #f7f7f7;
+      margin: 16px 0;
+    }
+
+    code {
+      background: #f1f1f1;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Enterprise Code Review Report</h1>
+
+<p>
+  <strong>Repository:</strong> Enterprise Code Review Agent<br>
+  <strong>Review Type:</strong> Enterprise Code Review / Multi-Agent Validation<br>
+  <strong>Status:</strong> Reviewer-ready
+</p>
+
+<h2>Executive Summary</h2>
+
+<p>
+This report documents the controls used to evaluate generated code-review
+results. The system does not treat model confidence, schema validity, or
+successful tool execution as proof of correctness.
+</p>
+
+<p>
+The review separates model output, deterministic validation, schema/tool
+validation, routing evidence, provenance, conflicts, timeouts and human-review
+requirements.
+</p>
+
+<div class="note">
+  <strong>Core principle:</strong>
+  Evaluate generated output rather than automatically trusting it because it
+  is confident, structured, schema-valid or tool-generated.
+</div>
+
+<h2>1. Policy Routing and Calibration</h2>
+
+<p>
+The reviewed calibration cell is
+<code>umbrella × exclusions</code>.
+</p>
+
+<table>
+  <tr>
+    <th>Metric</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Confidence</td>
+    <td class="metric">0.93</td>
+  </tr>
+  <tr>
+    <td>Observed accuracy</td>
+    <td class="metric">0.00</td>
+  </tr>
+  <tr>
+    <td>Cell Brier score</td>
+    <td class="metric">0.865</td>
+  </tr>
+  <tr>
+    <td>Overall Brier score</td>
+    <td class="metric">0.291</td>
+  </tr>
+</table>
+
+<p>
+The cell demonstrates that high confidence cannot be treated as correctness.
+The confidence value of 0.93 coincided with observed accuracy of 0.00 in this
+evaluation cell.
+</p>
+
+<p>
+The cell-level Brier score of 0.865 is retained alongside the aggregate Brier
+score of 0.291 so that the aggregate does not hide the local calibration
+failure.
+</p>
+
+<p>
+Routing evidence is retained in
+<code>01-policy-pipeline/routing_decisions.json</code>.
+</p>
+
+<h2>2. Schema and Tool Validation</h2>
+
+<p>
+The review explicitly distinguishes schema/tool validity from semantic
+correctness.
+</p>
+
+<ul>
+  <li>A schema-valid response can still contain an incorrect value.</li>
+  <li>Deterministic quantities are independently validated.</li>
+  <li>Model-generated arithmetic is not automatically trusted.</li>
+  <li>Discrepancies are preserved rather than silently overwritten.</li>
+</ul>
+
+<div class="note">
+  <strong>Validation rule:</strong>
+  Schema-valid does not mean factually correct.
+</div>
+
+<h2>3. Missing and Null Values</h2>
+
+<p>
+The extraction workflow distinguishes missing, null, zero, empty and
+unavailable values.
+</p>
+
+<p>
+A missing value is not silently converted to zero, and unavailable evidence is
+not converted into a factual assertion.
+</p>
+
+<p>
+Evidence:
+<code>02-schema-tool-validation/extract-run.txt</code>
+</p>
+
+<h2>4. Normalization</h2>
+
+<p>
+Equivalent representations are normalized before comparison where appropriate.
+The original/source representation remains available for auditability.
+</p>
+
+<p>
+Normalization is therefore used to make valid comparisons and is not used to
+fabricate or alter evidence.
+</p>
+
+<h2>5. Supply-Chain Investigation</h2>
+
+<h3>Provenance</h3>
+
+<p>
+Material claims retain source, metric, value, date, scope and conflict
+information.
+</p>
+
+<h3>Conflicting Metrics</h3>
+
+<p>
+When sources disagree, both values remain visible with their provenance.
+Conflicting metrics are not silently merged into a single unsupported value.
+</p>
+
+<h3>Dated Claims</h3>
+
+<p>
+Time-sensitive claims are associated with relevant dates. Historical evidence
+is not presented as current evidence without appropriate date context.
+</p>
+
+<h2>6. Timeout and Unavailable Sources</h2>
+
+<p>
+A source that cannot be retrieved within the permitted time is represented as
+<code>TIMEOUT / UNAVAILABLE</code>.
+</p>
+
+<p>
+A timeout is not interpreted as proof that the underlying claim is false.
+The source remains visible for audit and follow-up.
+</p>
+
+<p>
+Evidence:
+<code>03-supply-chain/timeout-run.txt</code>
+</p>
+
+<h2>7. Human Review</h2>
+
+<p>
+Human review remains appropriate when:
+</p>
+
+<ul>
+  <li>confidence is poorly calibrated;</li>
+  <li>evidence sources conflict;</li>
+  <li>deterministic validation disagrees with model output;</li>
+  <li>required evidence is unavailable;</li>
+  <li>interpretation is ambiguous; or</li>
+  <li>a time-sensitive claim cannot be verified.</li>
+</ul>
+
+<h2>8. Cross-System Reflection</h2>
+
+<table>
+  <tr>
+    <th>System</th>
+    <th>Reliability Lesson</th>
+  </tr>
+  <tr>
+    <td>Policy routing</td>
+    <td>
+      Confidence must be evaluated against observed correctness.
+    </td>
+  </tr>
+  <tr>
+    <td>Schema/tool validation</td>
+    <td>
+      Structural validity is necessary but not sufficient for semantic
+      correctness.
+    </td>
+  </tr>
+  <tr>
+    <td>Supply-chain investigation</td>
+    <td>
+      Conflicts, provenance, dates and unavailable evidence must remain
+      visible.
+    </td>
+  </tr>
+</table>
+
+<h2>9. Reviewer Checklist</h2>
+
+<table>
+  <tr>
+    <th>Reviewer Requirement</th>
+    <th>Status</th>
+    <th>Evidence</th>
+  </tr>
+
+  <tr>
+    <td>Routing evidence</td>
+    <td class="pass">PASS</td>
+    <td>01-policy-pipeline/routing_decisions.json</td>
+  </tr>
+
+  <tr>
+    <td>Calibration evidence</td>
+    <td class="pass">PASS</td>
+    <td>01-policy-pipeline/calibration-report.txt</td>
+  </tr>
+
+  <tr>
+    <td>Confidence vs correctness</td>
+    <td class="pass">PASS</td>
+    <td>01-policy-pipeline/calibration-report.txt</td>
+  </tr>
+
+  <tr>
+    <td>Cell-level Brier score</td>
+    <td class="pass">PASS</td>
+    <td>01-policy-pipeline/calibration-report.txt</td>
+  </tr>
+
+  <tr>
+    <td>Overall Brier score</td>
+    <td class="pass">PASS</td>
+    <td>01-policy-pipeline/calibration-report.txt</td>
+  </tr>
+
+  <tr>
+    <td>Schema vs semantic validity</td>
+    <td class="pass">PASS</td>
+    <td>02-schema-tool-validation/discrepancy-run.txt</td>
+  </tr>
+
+  <tr>
+    <td>Deterministic validation</td>
+    <td class="pass">PASS</td>
+    <td>02-schema-tool-validation/discrepancy-run.txt</td>
+  </tr>
+
+  <tr>
+    <td>Null/missing handling</td>
+    <td class="pass">PASS</td>
+    <td>02-schema-tool-validation/extract-run.txt</td>
+  </tr>
+
+  <tr>
+    <td>Normalization</td>
+    <td class="pass">PASS</td>
+    <td>02-schema-tool-validation/extract-run.txt</td>
+  </tr>
+
+  <tr>
+    <td>Provenance-preserving conflicts</td>
+    <td class="pass">PASS</td>
+    <td>03-supply-chain/investigation-run.txt</td>
+  </tr>
+
+  <tr>
+    <td>Timeout handling</td>
+    <td class="pass">PASS</td>
+    <td>03-supply-chain/timeout-run.txt</td>
+  </tr>
+
+  <tr>
+    <td>Dated claims</td>
+    <td class="pass">PASS</td>
+    <td>03-supply-chain/briefing.txt</td>
+  </tr>
+
+  <tr>
+    <td>Cross-system reflection</td>
+    <td class="pass">PASS</td>
+    <td>reflection-brief.md</td>
+  </tr>
+</table>
+
+<h2>Final Assessment</h2>
+
+<p>
+The report package addresses the identified reviewer concerns by explicitly
+separating confidence, structural validity, deterministic validation,
+provenance, conflicts, time-sensitive claims and unavailable evidence.
+</p>
+
+<p>
+The key controls are:
+</p>
+
+<ol>
+  <li>Confidence is evaluated against observed correctness.</li>
+  <li>Deterministic checks independently validate checkable results.</li>
+  <li>Schema validity is separated from semantic validity.</li>
+  <li>Missing values remain explicit.</li>
+  <li>Normalization preserves source information.</li>
+  <li>Conflicting metrics remain visible.</li>
+  <li>Timeouts remain explicit unavailable states.</li>
+  <li>Time-sensitive claims include date context.</li>
+  <li>Ambiguous cases remain eligible for human review.</li>
+</ol>
+
+</body>
+</html>
